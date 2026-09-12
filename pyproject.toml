@@ -1,0 +1,25 @@
+[project]
+name = "tasker"
+version = "0.1.0"
+description = "A task utility for manager tasker tasks"
+readme = "README.md"
+authors = [
+    { name = "Shaked Gold", email = "shakedgold2005@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "ruamel-yaml>=0.19.1",
+]
+
+[project.scripts]
+tasker = "tasker:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipython==9.17.1",
+    "pydantic==2.12",
+]

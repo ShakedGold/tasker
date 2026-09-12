@@ -1,0 +1,17 @@
+[properties.status]
+type = "enum"
+values = ["open", "closed"]
+
+[properties.priority]
+type = "number"
+min = 0
+max = 100
+
+[properties.kind]
+type = "enum"
+values = ["bug", "feature", "test"]
+
+[properties.tags]
+type = "array"
+items = ["scope"]
+

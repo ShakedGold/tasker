@@ -1,10 +1,12 @@
 from pathlib import Path
 
+TASKER_DIR_NAME = ".tasker"
+
 def find_tasks_dir(start: Path | None = None) -> Path | None:
     current = (start or Path.cwd()).resolve()
 
     while True:
-        tasks_dir = current / ".tasker"
+        tasks_dir = current / TASKER_DIR_NAME
 
         if tasks_dir.is_dir():
             return tasks_dir

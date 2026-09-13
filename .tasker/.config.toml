@@ -13,5 +13,3 @@ values = ["bug", "feature", "test"]
 
 [properties.tags]
 type = "array"
-items = ["scope"]
-

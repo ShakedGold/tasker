@@ -29,4 +29,7 @@ def main():
     try:
         app.meta()
     except BaseException as err:
+        if isinstance(err, SystemExit):
+            return
+
         logging.error(str(err))

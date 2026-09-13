@@ -24,7 +24,6 @@ def edit(id: int, *, tasks: Fixture[list[Task]]):
     filtered_tasks = list(filter(lambda task: task.task_id == id, tasks))
 
     if len(filtered_tasks) == 0:
-        logging.error(f"task({id}): not found")
-        return
+        raise RuntimeError(f"task({id}) not found")
 
     edit_task(filtered_tasks[0].path)

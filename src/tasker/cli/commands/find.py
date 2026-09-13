@@ -95,7 +95,7 @@ class OperationStateMachine:
 
     def _handle_operation(self, value: str):
         if value not in Operations.__members__.values():
-            raise ValueError(f"TQL Failure: operation: {value} is not supported, supported operations: {Operations.__members__.values()}")
+            raise ValueError(f"TQL Failure: operation: '{value}' is not supported, supported operations: {[v.value for v in Operations.__members__.values()]}")
 
         op = Operations(value)
         self.stack.append((self.state, op))
@@ -106,14 +106,10 @@ class OperationStateMachine:
         self.state = OperationState.LOGICAL
 
     def _handle_logical(self, value: str):
-        if value not in LogicalOperations.__members__.values() and value not in UnaryOperations.__members__.values():
-            raise ValueError(f"TQL Failure: logical operation: {value} is not supported, supported operations: {list(LogicalOperations.__members__.values()) + list(UnaryOperations.__members__.values())}")
+        if value not in LogicalOperations.__members__.values():
+            raise ValueError(f"TQL Failure: logical operation: '{value}' is not supported, supported operations: {[v.value for v in LogicalOperations.__members__.values()]}")
 
-        if value in LogicalOperations.__members__.values():
-            op = LogicalOperations(value)
-        else:
-            op = UnaryOperations(value)
-
+        op = LogicalOperations(value)
         self.stack.append((self.state, op))
         self.state = OperationState.PROPERTY
 

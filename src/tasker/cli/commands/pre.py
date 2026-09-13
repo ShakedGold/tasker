@@ -64,8 +64,7 @@ def config():
     tasks_path = helpers.find_tasks_dir()
 
     if tasks_path is None:
-        logging.critical("Not in a tasker project")
-        os._exit(0)
+        raise RuntimeError("Not in a tasker project")
 
     return TaskerConfig.parse_file(tasks_path / ".config.toml")
 
@@ -75,8 +74,7 @@ def tasks(config: Fixture[TaskerConfig]):
     tasks_path = helpers.find_tasks_dir()
 
     if tasks_path is None:
-        logging.critical("Not in a tasker project")
-        os._exit(0)
+        raise RuntimeError("Not in a tasker project")
 
     dirs = helpers.find_all_task_paths(tasks_path)
 

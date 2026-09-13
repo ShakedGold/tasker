@@ -5,6 +5,8 @@ from cyclopts import App
 import tasker.cli.helpers as helpers
 
 DEFAULT_CONFIG = """\
+root_file_name = "README.md"
+
 [properties.status]
 type = "enum"
 values = ["open", "closed"]

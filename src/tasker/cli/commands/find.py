@@ -48,7 +48,7 @@ class BinaryOperation(Operation):
 
     def exec(self) -> bool:
         if self.a is None or self.b is None:
-            return True
+            return False
 
         if self.op in [Operations.GT, Operations.GTE, Operations.LT, Operations.LTE]:
             if not self._is_number(str(self.a)):
@@ -149,7 +149,10 @@ class OperationStateMachine:
                 task_property = task.properties.get(value)
 
                 # could be null, signifying that it does not exist on the task
-                task_stack.append(task_property.value)
+                if task_property is None:
+                    task_stack.append(None)
+                else:
+                    task_stack.append(task_property.value)
                 amount_left += 1
             elif state == OperationState.OP:
                 task_stack.append(value.value)

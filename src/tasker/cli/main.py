@@ -1,3 +1,4 @@
+from tasker.cli.commands.cat import cat_app
 from tasker.cli.commands.init import init_app
 from tasker.cli.commands.find import find_app
 from tasker.cli.commands.rm import rm_app
@@ -24,6 +25,7 @@ app.command(new_app, name="new")
 app.command(rm_app, name="rm")
 app.command(find_app, name="find")
 app.command(init_app, name="init")
+app.command(cat_app, name="cat")
 
 @app.meta.default
 def pre_command(

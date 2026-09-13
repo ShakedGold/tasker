@@ -1,5 +1,5 @@
 ---
-priority: 100
+priority: 50
 status: closed
 tags:
     - scope

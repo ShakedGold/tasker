@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Final, TextIO
@@ -24,6 +25,12 @@ class Task(BaseModel):
     properties: dict[str, ParsedProperty]
     title: str
     body: str
+    task_id: int
+    path: Path
+
+    def __str__(self) -> str:
+        path = os.path.relpath(self.path, Path.cwd())
+        return f"{path}|{self.title}"
 
     @classmethod
     def _read_properties_section(cls, task_file: TextIO) -> str:
@@ -57,11 +64,15 @@ class Task(BaseModel):
         properties_section = cls._read_properties_section(task_file)
 
         try:
-            properties_yaml: dict[str, object] = yaml.load(properties_section)
+            properties_yaml: dict[str, object] | None = yaml.load(properties_section)
         except DuplicateKeyError as err:
             raise ValueError(f"Duplicated property! {err.problem}")
 
         properties: dict[str, object] = {}
+
+        if properties_yaml is None:
+            return properties
+
         for property_name, property_content in properties_yaml.items():
             properties[property_name] = cls._parse_property(property_name, property_content, config)
 
@@ -84,13 +95,17 @@ class Task(BaseModel):
     @classmethod
     def _parse_body(cls, task_file: TextIO) -> str:
         empty_line = task_file.readline()
+
+        if empty_line == "":
+            return ""
+
         if empty_line != "\n":
             raise ValueError(f"Expected empty seperating line between title and body, found: {empty_line}")
 
         return task_file.read()
 
     @classmethod
-    def parse_file(cls, path: str | Path, config: TaskerConfig):
+    def parse_file(cls, path: str | Path, task_id: int, config: TaskerConfig):
         properties: str = ""
 
         with open(path, "r") as task_file:
@@ -98,5 +113,5 @@ class Task(BaseModel):
             title = cls._parse_title(task_file)
             body = cls._parse_body(task_file)
 
-        return cls(properties=properties, title=title, body=body)
+        return cls(properties=properties, title=title, body=body, task_id=task_id, path=Path(path))
 

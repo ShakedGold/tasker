@@ -1,3 +1,4 @@
+from contextlib import suppress
 from pathlib import Path
 from asyncio import all_tasks
 from tasker.tasks.task import Task
@@ -50,21 +51,9 @@ def parse_fixtures(command):
 
     return results
 
-@app.meta.default
-def pre_command(
-    *tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)],
-):
-    command, bound, _ = app.parse_args(tokens)
-
-    extra_kwargs = parse_fixtures(command)
-    return command(*bound.args, **bound.kwargs, **extra_kwargs)
-
 @command_fixture
 def config():
     tasks_path = helpers.find_tasks_dir()
-
-    if tasks_path is None:
-        raise RuntimeError("Not in a tasker project")
 
     return TaskerConfig.parse_file(tasks_path / ".config.toml")
 
@@ -73,12 +62,12 @@ def tasks(config: Fixture[TaskerConfig]):
     all_tasks = []
     tasks_path = helpers.find_tasks_dir()
 
-    if tasks_path is None:
-        raise RuntimeError("Not in a tasker project")
-
     dirs = helpers.find_all_task_paths(tasks_path)
 
     for task in dirs:
-        all_tasks.append(Task.parse_file(task / "README.md", int(task.name), config))
+        try:
+            all_tasks.append(Task.parse_file(task / config.root_file_name, int(task.name), config))
+        except BaseException as err:
+            logging.error(err)
 
     return all_tasks

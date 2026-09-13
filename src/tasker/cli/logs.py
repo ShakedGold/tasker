@@ -5,8 +5,21 @@ from pathlib import Path
 
 from rich.logging import RichHandler
 
+class DynamicLevelFormatter(logging.Formatter):
 
-class ColoredMessageFormatter(logging.Formatter):
+    def __init__(self, formats: dict[int, logging.Formatter]):
+        super().__init__()
+        self.formats = formats
+        self.default_formatter = logging.Formatter('%(asctime)s [%(levelname)s] (%(filename)s:%(lineno)d) - %(message)s')
+
+    def format(self, record: logging.LogRecord) -> str:
+        logger_name = record.name
+        logger = logging.getLogger(logger_name)
+
+        formatter = self.formats.get(logger.level, self.default_formatter)
+        return formatter.format(record)
+
+class ColoredMessageFormatter(DynamicLevelFormatter):
     """Color the entire log message based on its log level."""
 
     COLORS = {
@@ -19,9 +32,12 @@ class ColoredMessageFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
+        log_message = message.split(" - ")[-1]
+        pre_message = message.removesuffix(log_message)
+
         color = self.COLORS.get(record.levelno, "white")
 
-        return f"[{color}]{message}[/{color}]"
+        return f"{pre_message}[{color}]{log_message}[/{color}]"
 
 
 def setup_logging(
@@ -57,7 +73,9 @@ def setup_logging(
         rich_tracebacks=True,
     )
     console_handler.setFormatter(
-        ColoredMessageFormatter("%(message)s")
+        ColoredMessageFormatter({
+            logging.FATAL: logging.Formatter("%(message)s")
+        })
     )
 
     root_logger.addHandler(console_handler)

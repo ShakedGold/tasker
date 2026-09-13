@@ -1,3 +1,6 @@
+from tasker.tasks.task import Task
+from tasker.config.config import TaskerConfig
+from tasker.cli.commands.pre import Fixture
 import os
 from tasker.cli.commands.edit import edit, edit_task
 from pathlib import Path
@@ -9,7 +12,7 @@ import tasker.cli.helpers as helpers
 new_app = App()
 
 @new_app.default
-def new(edit: bool = True):
+def new(edit: bool = True, *, config: Fixture[TaskerConfig]):
     """Create a new task
 
     Parameters
@@ -20,28 +23,10 @@ def new(edit: bool = True):
 
     tasks_dir = helpers.find_tasks_dir()
 
-    if tasks_dir is None:
-        logging.critical("Not in a tasker project")
-        return
-
     new_task_id = len(helpers.find_all_task_paths(tasks_dir)) + 1
-    new_task_path = Path(tasks_dir) / str(new_task_id)
-
-    new_task_path.mkdir()
-
-    readme_task = new_task_path / "README.md"
-
-    with open(readme_task, "w+") as readme_file:
-        readme_file.writelines([
-            "---",
-            "\n",
-            "---",
-            "\n",
-            "\n",
-            "# TASK TITLE",
-        ])
+    task = Task.create_default(new_task_id, config)
 
     if edit:
-        edit_task(readme_task)
+        edit_task(task.path)
     else:
         print(f"Created task #{new_task_id} in {os.path.relpath(tasks_dir, Path.cwd())}/")

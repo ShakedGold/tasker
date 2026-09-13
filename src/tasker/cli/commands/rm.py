@@ -20,10 +20,6 @@ def rm(ids: list[int]):
 
     tasks_dir = helpers.find_tasks_dir()
 
-    if tasks_dir is None:
-        logging.critical("Not in a tasker project")
-        return
-
     for task_path in tasks_dir.iterdir():
         if not task_path.is_dir():
             continue

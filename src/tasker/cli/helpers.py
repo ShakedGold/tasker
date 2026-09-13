@@ -2,7 +2,7 @@ from pathlib import Path
 
 TASKER_DIR_NAME = ".tasker"
 
-def find_tasks_dir(start: Path | None = None) -> Path | None:
+def find_tasks_dir(start: Path | None = None) -> Path:
     current = (start or Path.cwd()).resolve()
 
     while True:
@@ -15,7 +15,7 @@ def find_tasks_dir(start: Path | None = None) -> Path | None:
 
         # We've reached the filesystem root.
         if parent == current:
-            return None
+            raise RuntimeError("not in a tasker project")
 
         current = parent
 

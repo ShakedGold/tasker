@@ -8,6 +8,7 @@ from pydantic.deprecated.parse import Protocol as DeprecatedParseProtocol
 
 
 class TaskerConfig(BaseModel):
+    root_file_name: str = "README.md"
     properties: dict[str, Property]
 
     @classmethod

@@ -197,5 +197,5 @@ def find(query: list[str], *, config: Fixture[TaskerConfig], tasks: Fixture[list
     for task in tasks:
         result = state_machine.parse(task)
         if result:
-            print(task)
+            print(repr(task))
 

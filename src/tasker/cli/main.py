@@ -10,6 +10,7 @@ from typing import Annotated
 
 from tasker.tasks.task import Task
 from tasker.config.config import TaskerConfig
+from tasker.cli.commands.pre import parse_fixtures
 from tasker.cli.commands.app import app
 from tasker.cli.commands.pre import FIXTURES
 from tasker.cli.logs import setup_logging
@@ -24,12 +25,33 @@ app.command(rm_app, name="rm")
 app.command(find_app, name="find")
 app.command(init_app, name="init")
 
+@app.meta.default
+def pre_command(
+    *tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)],
+    verbose: Annotated[
+        int,
+        Parameter(
+            name=["-v", "--verbose"],
+            count=True,
+            help="Increase verbosity (-v for INFO, -vv for DEBUG).",
+        ),
+    ] = 0,
+):
+    log_level = (logging.FATAL - (verbose * 10))
+    setup_logging(log_level)
+
+    command, bound, _ = app.parse_args(tokens)
+
+    extra_kwargs = parse_fixtures(command)
+    return command(*bound.args, **bound.kwargs, **extra_kwargs)
+
 def main():
-    setup_logging()
     try:
         app.meta()
+    except SystemExit:
+        return
     except BaseException as err:
-        if isinstance(err, SystemExit):
-            return
+        logging.fatal(str(err))
 
-        logging.error(str(err))
+        if logging.getLogger().level != logging.FATAL:
+            raise err

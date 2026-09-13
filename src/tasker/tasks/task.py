@@ -1,12 +1,15 @@
 import os
 from pathlib import Path
 from pydantic import BaseModel
-from typing import Final, TextIO
+from typing import Final, TextIO, Self
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import DuplicateKeyError
 
+import tasker.cli.helpers as helpers
 from tasker.config.property import Property, ParsedProperty
 from tasker.config.config import TaskerConfig
+
+DEFAULT_TASK_TITLE = "Default Task Title"
 
 """
 FORMAT OF TASK FILE:
@@ -28,9 +31,48 @@ class Task(BaseModel):
     task_id: int
     path: Path
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         path = os.path.relpath(self.path, Path.cwd())
         return f"{path}|{self.title}"
+
+    def __str__(self) -> str:
+        task_contents = []
+
+        task_contents.append("---")
+        for task_property_name, task_property in self.properties.items():
+            task_contents.append(f"{task_property_name}: {task_property.value}")
+        task_contents.append("---")
+        task_contents.append("")
+        task_contents.append(f"# {self.title}")
+        task_contents.append(f"{self.body}")
+
+        return "\n".join(task_contents)
+
+    @classmethod
+    def create_default(cls, task_id: int, config: TaskerConfig) -> Self:
+        tasker_dir = helpers.find_tasks_dir() 
+
+        task_dir = tasker_dir / str(task_id)
+        task_file = task_dir / config.root_file_name
+        default_properties = {p_name: ParsedProperty(property_type=p, value=p.default) for p_name, p in config.properties.items() if p.default is not None}
+
+        if task_file.exists() or task_dir.exists():
+            raise RuntimeError(f"task already exists! {task_file=}")
+
+        task = cls(
+            properties=default_properties,
+            title=DEFAULT_TASK_TITLE,
+            body="",
+            task_id=task_id,
+            path=task_file,
+        )
+
+        task_dir.mkdir()
+
+        with open(task.path, "w+") as task_entry_file:
+            task_entry_file.write(str(task))
+
+        return task
 
     @classmethod
     def _read_properties_section(cls, task_file: TextIO) -> str:
@@ -47,7 +89,7 @@ class Task(BaseModel):
         return properties
 
     @classmethod
-    def _parse_property(cls, property_name: str, property_content: object, config: TaskerConfig) -> ParsedProperty:
+    def _parse_property(cls, property_name: str, property_content: object, task_file: TextIO, config: TaskerConfig) -> ParsedProperty:
         tasker_property = config.properties.get(property_name)
         if tasker_property is None:
             raise ValueError(f"Invalid property detected! ({property_name}), available properties: {config.properties.keys()}")
@@ -55,7 +97,7 @@ class Task(BaseModel):
         try:
             tasker_property.check(property_content)
         except ValueError as err:
-            raise ValueError(f"Validation failed for: {property_name}! {err}") from err
+            raise ValueError(f"Validation failed for '{property_name}' in task: '{os.path.relpath(task_file.name, Path.cwd())}' {err}") from err
 
         return ParsedProperty(property_type=tasker_property, value=property_content)
 
@@ -74,7 +116,7 @@ class Task(BaseModel):
             return properties
 
         for property_name, property_content in properties_yaml.items():
-            properties[property_name] = cls._parse_property(property_name, property_content, config)
+            properties[property_name] = cls._parse_property(property_name, property_content, task_file, config)
 
         return properties
 

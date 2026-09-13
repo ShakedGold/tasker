@@ -4,7 +4,7 @@ def find_tasks_dir(start: Path | None = None) -> Path | None:
     current = (start or Path.cwd()).resolve()
 
     while True:
-        tasks_dir = current / ".tasks"
+        tasks_dir = current / ".tasker"
 
         if tasks_dir.is_dir():
             return tasks_dir

@@ -1,5 +1,3 @@
-from rich.markdown import Markdown
-from rich.console import Console
 import logging
 from cyclopts import App
 
@@ -19,6 +17,8 @@ def cat(ids: list[int], syntax: bool = True, *, tasks: Fixture[list[Task]]):
 
         task = filtered_tasks[0]
         if syntax:
+            from rich.markdown import Markdown
+            from rich.console import Console
             console = Console()
             md = Markdown(str(task))
 

@@ -1,5 +1,3 @@
-import tomllib
-
 from typing import Self, TYPE_CHECKING
 from pathlib import Path
 from tasker.config.property import Property
@@ -27,6 +25,7 @@ class TaskerConfig(BaseModel):
             return super().parse_file(path, content_type=content_type, encoding=encoding, proto=proto, allow_pickle=allow_pickle)
 
         with open(path, "rb") as config_file:
+            import tomllib
             config_data = tomllib.load(config_file)
 
         return cls.model_validate(config_data)

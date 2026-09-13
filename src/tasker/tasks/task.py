@@ -1,13 +1,12 @@
 import os
 from pathlib import Path
 from pydantic import BaseModel
-from typing import Final, TextIO, Self
-from ruamel.yaml import YAML
-from ruamel.yaml.constructor import DuplicateKeyError
+from typing import Final, TextIO, Self, Any, TYPE_CHECKING
 
 import tasker.cli.helpers as helpers
-from tasker.config.property import Property, ParsedProperty
 from tasker.config.config import TaskerConfig
+
+from tasker.config.property import ParsedProperty
 
 DEFAULT_TASK_TITLE = "Default Task Title"
 
@@ -22,7 +21,7 @@ FORMAT OF TASK FILE:
 <BODY>
 """
 
-yaml = YAML()
+yaml: Any
 
 class Task(BaseModel):
     properties: dict[str, ParsedProperty]
@@ -54,6 +53,8 @@ class Task(BaseModel):
 
         task_dir = tasker_dir / str(task_id)
         task_file = task_dir / config.root_file_name
+
+        from tasker.config.property import ParsedProperty
         default_properties = {p_name: ParsedProperty(property_type=p, value=p.default) for p_name, p in config.properties.items() if p.default is not None}
 
         if task_file.exists() or task_dir.exists():
@@ -103,7 +104,13 @@ class Task(BaseModel):
 
     @classmethod
     def _parse_properties_section(cls, task_file: TextIO, config: TaskerConfig):
+        global yaml
+
         properties_section = cls._read_properties_section(task_file)
+
+        from ruamel.yaml import YAML
+        from ruamel.yaml.constructor import DuplicateKeyError
+        yaml = YAML()
 
         try:
             properties_yaml: dict[str, object] | None = yaml.load(properties_section)

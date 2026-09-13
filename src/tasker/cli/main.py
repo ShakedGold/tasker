@@ -1,7 +1,3 @@
-from tasker.cli.commands.cat import cat_app
-from tasker.cli.commands.init import init_app
-from tasker.cli.commands.find import find_app
-from tasker.cli.commands.rm import rm_app
 import os
 import logging
 import inspect
@@ -18,6 +14,10 @@ from tasker.cli.logs import setup_logging
 from tasker.cli.commands.ls import ls_app
 from tasker.cli.commands.edit import edit_app
 from tasker.cli.commands.new import new_app
+from tasker.cli.commands.cat import cat_app
+from tasker.cli.commands.init import init_app
+from tasker.cli.commands.find import find_app
+from tasker.cli.commands.rm import rm_app
 
 app.command(ls_app, name="ls")
 app.command(edit_app, name="edit")
@@ -57,3 +57,6 @@ def main():
 
         if logging.getLogger().level != logging.FATAL:
             raise err
+
+if __name__ == "__main__":
+    main()

@@ -8,6 +8,7 @@ from ruamel.yaml.constructor import DuplicateKeyError
 import tasker.cli.helpers as helpers
 from tasker.config.property import Property, ParsedProperty
 from tasker.config.config import TaskerConfig
+from tasker.config.generation import GenerationMethod
 
 DEFAULT_TASK_TITLE = "Default Task Title"
 
@@ -28,7 +29,7 @@ class Task(BaseModel):
     properties: dict[str, ParsedProperty]
     title: str
     body: str
-    task_id: int
+    task_id: str
     path: Path
 
     def __repr__(self) -> str:
@@ -49,10 +50,13 @@ class Task(BaseModel):
         return "\n".join(task_contents)
 
     @classmethod
-    def create_default(cls, task_id: int, config: TaskerConfig) -> Self:
+    def create_default(cls, method: GenerationMethod, config: TaskerConfig) -> Self:
         tasker_dir = helpers.find_tasks_dir() 
+        tasks = helpers.find_all_task_paths(tasker_dir)
 
-        task_dir = tasker_dir / str(task_id)
+        task_id = method.generate(config.generation.parameters, tasks)
+
+        task_dir = tasker_dir / task_id
         task_file = task_dir / config.root_file_name
         default_properties = {p_name: ParsedProperty(property_type=p, value=p.default) for p_name, p in config.properties.items() if p.default is not None}
 
@@ -147,7 +151,7 @@ class Task(BaseModel):
         return task_file.read()
 
     @classmethod
-    def parse_file(cls, path: str | Path, task_id: int, config: TaskerConfig):
+    def parse_file(cls, path: str | Path, task_id: str, config: TaskerConfig):
         properties: str = ""
 
         with open(path, "r") as task_file:

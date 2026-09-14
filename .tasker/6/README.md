@@ -22,7 +22,7 @@ property = tags
 ```
 
 will work like so:
-```console
+```bash
 tasker cmd --id 6 tag add scope
 tasker cmd --id 6 tag remove scope
 ```

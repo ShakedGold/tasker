@@ -7,6 +7,9 @@ import tasker.cli.helpers as helpers
 DEFAULT_CONFIG = """\
 root_file_name = "README.md"
 
+[generation]
+method = "counter"
+
 [properties.status]
 type = "enum"
 values = ["open", "closed"]

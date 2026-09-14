@@ -9,7 +9,7 @@ import tasker.cli.helpers as helpers
 rm_app = App()
 
 @rm_app.default
-def rm(ids: list[int]):
+def rm(ids: list[str]):
     """Delete tasks
 
     Parameters
@@ -20,12 +20,8 @@ def rm(ids: list[int]):
 
     tasks_dir = helpers.find_tasks_dir()
 
-    for task_path in tasks_dir.iterdir():
-        if not task_path.is_dir():
-            continue
-        if not task_path.name.isdigit():
-            continue
+    for task_id in ids:
+        task_path = helpers.find_single_task_by_partial_id(task_id, tasks_dir)
 
-        if int(task_path.name) in ids:
-            shutil.rmtree(task_path)
-            print(f"Deleted task #{task_path.name} in {os.path.relpath(tasks_dir, Path.cwd())}/")
+        shutil.rmtree(task_path)
+        print(f"Deleted task '{task_path.name}' in {os.path.relpath(tasks_dir, Path.cwd())}/")

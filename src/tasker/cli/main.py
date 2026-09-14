@@ -53,7 +53,11 @@ def main():
     except SystemExit:
         return
     except BaseException as err:
-        logging.fatal(str(err))
+        error_message = str(err)
+        if len(error_message) == 0:
+            logging.fatal(repr(err))
+        else:
+            logging.fatal(error_message)
 
         if logging.getLogger().level != logging.FATAL:
             raise err

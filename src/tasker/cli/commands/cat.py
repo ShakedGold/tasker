@@ -5,19 +5,26 @@ from cyclopts import App
 
 from tasker.tasks.task import Task
 from tasker.cli.commands.pre import Fixture
+import tasker.cli.helpers as helpers
 
 cat_app = App()
 
 @cat_app.default
-def cat(ids: list[int], syntax: bool = True, *, tasks: Fixture[list[Task]]):
+def cat(ids: list[str], syntax: bool = True, *, tasks: Fixture[list[Task]]):
+    """Concat tasks and print them out
+
+    Parameters
+    ----------
+    ids:
+        The task ids to concat
+    syntax:
+        Display markdown formatting syntax highlighting
+    """
+    tasks_dir = helpers.find_tasks_dir()
+
     for task_id in ids:
-        filtered_tasks = list(filter(lambda task: task.task_id == task_id, tasks))
+        task = helpers.find_single_task_by_partial_id(task_id, tasks_dir)
 
-        if len(filtered_tasks) == 0:
-            logging.debug(f"task({task_id}): not found")
-            continue
-
-        task = filtered_tasks[0]
         if syntax:
             console = Console()
             md = Markdown(str(task))

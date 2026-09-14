@@ -2,14 +2,17 @@ import tomllib
 
 from typing import Self, TYPE_CHECKING
 from pathlib import Path
-from tasker.config.property import Property
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.deprecated.parse import Protocol as DeprecatedParseProtocol
+
+from tasker.config.property import Property
+from tasker.config.generation import TaskerGenerationConfig
 
 
 class TaskerConfig(BaseModel):
     root_file_name: str = "README.md"
     properties: dict[str, Property]
+    generation: TaskerGenerationConfig = Field(TaskerGenerationConfig())
 
     @classmethod
     def parse_file(

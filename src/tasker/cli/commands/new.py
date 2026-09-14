@@ -23,8 +23,7 @@ def new(edit: bool = True, *, config: Fixture[TaskerConfig]):
 
     tasks_dir = helpers.find_tasks_dir()
 
-    new_task_id = len(helpers.find_all_task_paths(tasks_dir)) + 1
-    task = Task.create_default(new_task_id, config)
+    task = Task.create_default(config.generation.method, config)
 
     if edit:
         edit_task(task.path)

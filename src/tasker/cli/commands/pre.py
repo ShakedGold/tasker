@@ -1,18 +1,18 @@
-from contextlib import suppress
-from pathlib import Path
-from asyncio import all_tasks
-from tasker.tasks.task import Task
-from markdown_it.cli.parse import parse_args
 import functools
 import os
 import logging
 import inspect
 
-from tasker.config.config import TaskerConfig
+from contextlib import suppress
+from pathlib import Path
+from asyncio import all_tasks
+from tasker.tasks.task import Task
+from markdown_it.cli.parse import parse_args
 from cyclopts import Parameter
 from typing import Callable, Annotated, Generic, TypeVar, get_origin, get_type_hints, get_args
 
 from tasker.cli.commands.app import app
+from tasker.config.config import TaskerConfig
 import tasker.cli.helpers as helpers
 
 T = TypeVar("T")
@@ -35,7 +35,8 @@ def get_fixture_type(annotation):
 
 def parse_fixtures(command):
     results = {}
-    annotations = get_type_hints(command, include_extras=True)
+    # annotations = get_type_hints(command, globalns=command.__globals__, localns=locals(), include_extras=True)
+    annotations = inspect.get_annotations(command)
 
     for arg, annotation in annotations.items():
         base_type = get_origin(get_fixture_type(annotation))
@@ -66,7 +67,7 @@ def tasks(config: Fixture[TaskerConfig]):
 
     for task in dirs:
         try:
-            all_tasks.append(Task.parse_file(task / config.root_file_name, int(task.name), config))
+            all_tasks.append(Task.parse_file(task / config.root_file_name, task.name, config))
         except BaseException as err:
             logging.error(err)
 

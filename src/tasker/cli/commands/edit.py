@@ -16,22 +16,16 @@ def edit_task(task_path: Path):
     os.execlp(editor, editor, task_path)
 
 @edit_app.default
-def edit(id: int, *, config: Fixture[TaskerConfig]):
+def edit(task_id: str, *, config: Fixture[TaskerConfig]):
     """Open $EDITOR on the task [id]/[root_file_name]
 
     Parameters
     ----------
-    id:
+    task_id:
         The task id to edit
     """
 
     
     task_dir = helpers.find_tasks_dir()
-    tasks = helpers.find_all_task_paths(task_dir)
-
-    filtered_tasks = list(filter(lambda task: int(task.name) == id, tasks))
-
-    if len(filtered_tasks) == 0:
-        raise RuntimeError(f"task({id}) not found")
-
-    edit_task(filtered_tasks[0] / config.root_file_name)
+    task = helpers.find_single_task_by_partial_id(task_id, task_dir)
+    edit_task(task / config.root_file_name)

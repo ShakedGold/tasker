@@ -1,37 +1,42 @@
-import functools
-import os
-import logging
 import inspect
+import logging
+from collections.abc import Callable
+from typing import (
+    Annotated,
+    Generic,
+    TypeVar,
+    get_args,
+    get_origin,
+)
 
-from contextlib import suppress
-from pathlib import Path
-from asyncio import all_tasks
-from tasker.tasks.task import Task
-from markdown_it.cli.parse import parse_args
 from cyclopts import Parameter
-from typing import Callable, Annotated, Generic, TypeVar, get_origin, get_type_hints, get_args
 
-from tasker.cli.commands.app import app
+from tasker.cli import helpers
 from tasker.config.config import TaskerConfig
-import tasker.cli.helpers as helpers
+from tasker.tasks.task import Task
 
 T = TypeVar("T")
 
+
 class FixtureParam(Generic[T]):
     pass
+
 
 Fixture = Annotated[T, FixtureParam[T], Parameter(parse=False)]
 
 FIXTURES: dict[str, Callable] = {}
 
+
 def command_fixture(fixture):
     FIXTURES[fixture.__name__] = fixture
     return fixture
+
 
 def get_fixture_type(annotation):
     if get_origin(annotation) is Annotated:
         return get_args(annotation)[1]
     return annotation
+
 
 def parse_fixtures(command):
     results = {}
@@ -52,11 +57,13 @@ def parse_fixtures(command):
 
     return results
 
+
 @command_fixture
 def config():
     tasks_path = helpers.find_tasks_dir()
 
     return TaskerConfig.parse_file(tasks_path / ".config.toml")
+
 
 @command_fixture
 def tasks(config: Fixture[TaskerConfig]):

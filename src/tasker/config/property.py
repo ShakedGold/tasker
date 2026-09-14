@@ -1,15 +1,16 @@
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
+
 
 class EnumProperty(BaseModel):
     type: Literal["enum"]
     values: list[str]
-    default: Optional[str] = Field(default=None)
+    default: str | None = Field(default=None)
 
     def check(self, value: object):
         if not isinstance(value, str):
-            raise ValueError(f"Enum validation failed! {value} is not a string")
+            raise TypeError(f"Enum validation failed! {value} is not a string")
 
         if value not in self.values:
             raise ValueError(f"Enum validation failed! {value} not in {self.values}")
@@ -19,11 +20,11 @@ class NumberProperty(BaseModel):
     type: Literal["number"]
     min: float | None = None
     max: float | None = None
-    default: Optional[float] = Field(default=None)
+    default: float | None = Field(default=None)
 
     def check(self, value: object):
         if not isinstance(value, (int, float)):
-            raise ValueError(f"Number validation failed! {value} is not a number")
+            raise TypeError(f"Number validation failed! {value} is not a number")
 
         if self.max and float(value) > self.max:
             raise ValueError(f"Number validation failed! {value} > {self.max}")
@@ -34,11 +35,11 @@ class NumberProperty(BaseModel):
 
 class ArrayProperty(BaseModel):
     type: Literal["array"]
-    default: Optional[list[object]] = Field(default=None)
+    default: list[object] | None = Field(default=None)
 
     def check(self, value: object):
         if not isinstance(value, list):
-            raise ValueError(f"Array validation failed! {value} is not a list")
+            raise TypeError(f"Array validation failed! {value} is not a list")
 
 
 Property = Annotated[
@@ -46,7 +47,7 @@ Property = Annotated[
     Field(discriminator="type"),
 ]
 
+
 class ParsedProperty(BaseModel):
     property_type: Property
     value: object
-

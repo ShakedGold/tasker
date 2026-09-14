@@ -1,13 +1,13 @@
-from rich.markdown import Markdown
-from rich.console import Console
-import logging
 from cyclopts import App
+from rich.console import Console
+from rich.markdown import Markdown
 
-from tasker.tasks.task import Task
+from tasker.cli import helpers
 from tasker.cli.commands.pre import Fixture
-import tasker.cli.helpers as helpers
+from tasker.tasks.task import Task
 
 cat_app = App()
+
 
 @cat_app.default
 def cat(ids: list[str], syntax: bool = True, *, tasks: Fixture[list[Task]]):

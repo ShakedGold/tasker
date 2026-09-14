@@ -1,29 +1,37 @@
-import os
-import logging
 import enum
+import logging
+import os
 from pathlib import Path
-from typing import Annotated, Optional
-from cyclopts import Parameter, App
+from typing import Annotated
 
+from cyclopts import App, Parameter
+
+from tasker.cli.commands.pre import Fixture
 from tasker.config.config import TaskerConfig
 from tasker.tasks.task import Task
-from tasker.cli.commands.pre import Fixture
-from tasker.cli.commands.app import app
 
 ls_app = App(help="List all tasks")
+
 
 class Format(enum.StrEnum):
     FILES = "files"
     TITLE = "title"
     PROPS = "props"
 
+
 @ls_app.default
 def ls(
-        format: Annotated[Optional[list[Format]], Parameter(alias="-f", consume_multiple=True, allow_repeating=False)] = None,
-        properties: Annotated[Optional[list[str]], Parameter(alias="-p", consume_multiple=True, allow_repeating=True)] = None,
-        *,
-        config: Fixture[TaskerConfig],
-        tasks: Fixture[list[Task]]
+    format: Annotated[
+        list[Format] | None,
+        Parameter(alias="-f", consume_multiple=True, allow_repeating=False),
+    ] = None,
+    properties: Annotated[
+        list[str] | None,
+        Parameter(alias="-p", consume_multiple=True, allow_repeating=True),
+    ] = None,
+    *,
+    config: Fixture[TaskerConfig],
+    tasks: Fixture[list[Task]],
 ):
     """List the tasks in tasker
 
@@ -46,7 +54,7 @@ def ls(
         properties = []
 
     for property_to_show in properties:
-        if property_to_show not in config.properties.keys():
+        if property_to_show not in config.properties:
             logging.error(f'property "{property_to_show}" does not exist')
             return
 
@@ -62,13 +70,14 @@ def ls(
         if Format.PROPS in format:
             properties_line = []
             for property_to_show in properties:
-                if property_to_show not in task.properties.keys():
+                if property_to_show not in task.properties:
                     continue
-                
-                properties_line.append(f"{property_to_show}={task.properties[property_to_show].value}")
+
+                properties_line.append(
+                    f"{property_to_show}={task.properties[property_to_show].value}"
+                )
 
             if len(properties_line) > 0:
                 task_line.append(",".join(properties_line))
 
         print("|".join(task_line))
-

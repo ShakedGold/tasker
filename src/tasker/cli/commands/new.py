@@ -1,15 +1,16 @@
-from tasker.tasks.task import Task
-from tasker.config.config import TaskerConfig
-from tasker.cli.commands.pre import Fixture
 import os
-from tasker.cli.commands.edit import edit, edit_task
 from pathlib import Path
-import logging
+
 from cyclopts import App
 
-import tasker.cli.helpers as helpers
+from tasker.cli import helpers
+from tasker.cli.commands.edit import edit_task
+from tasker.cli.commands.pre import Fixture
+from tasker.config.config import TaskerConfig
+from tasker.tasks.task import Task
 
 new_app = App()
+
 
 @new_app.default
 def new(edit: bool = True, *, config: Fixture[TaskerConfig]):
@@ -28,4 +29,4 @@ def new(edit: bool = True, *, config: Fixture[TaskerConfig]):
     if edit:
         edit_task(task.path)
     else:
-        print(f"Created task #{new_task_id} in {os.path.relpath(tasks_dir, Path.cwd())}/")
+        print(f"Created task '{task.task_id}' in {os.path.relpath(tasks_dir, Path.cwd())}/")

@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Shaked Gold", email = "shakedgold2005@gmail.com" }
 ]
-requires-python = ">=3.14"
+requires-python = "==3.14"
 dependencies = [
     "cyclopts==4.25.2",
     "ruamel-yaml==0.19.1",
@@ -17,10 +17,18 @@ dependencies = [
 tasker = "tasker:main"
 
 [build-system]
-requires = ["uv_build>=0.12.5,<0.13.0"]
+requires = ["uv_build==0.12.5,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
     "ipython==9.17.1",
+    "pre-commit==4.6.2",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "LOG"]
+ignore = ["LOG015", "E501"]

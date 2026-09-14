@@ -1,24 +1,26 @@
 from abc import ABC
 from enum import IntEnum, StrEnum
-from typing import Self, Literal
-from dataclasses import dataclass
+
 from cyclopts import App
 
-from tasker.tasks.task import Task
 from tasker.cli.commands.pre import Fixture
 from tasker.config.config import TaskerConfig
+from tasker.tasks.task import Task
 
 find_app = App()
 
+
 class OperationState(IntEnum):
-    PROPERTY = 0,
-    OP = 1,
-    VALUE = 2,
-    LOGICAL = 3,
+    PROPERTY = (0,)
+    OP = (1,)
+    VALUE = (2,)
+    LOGICAL = (3,)
+
 
 class LogicalOperations(StrEnum):
     AND = "and"
     OR = "or"
+
 
 class Operations(StrEnum):
     HAS = "has"
@@ -29,9 +31,11 @@ class Operations(StrEnum):
     LT = "lt"
     LTE = "lte"
 
+
 class Operation(ABC):
     def exec(self) -> bool:
         raise NotImplementedError
+
 
 class BinaryOperation(Operation):
     def __init__(self, a: object | None, b: object | None, op: Operations | LogicalOperations):
@@ -75,6 +79,7 @@ class BinaryOperation(Operation):
         elif self.op == LogicalOperations.OR:
             return self.a or self.b
 
+
 class OperationStateMachine:
     def __init__(self, config: TaskerConfig):
         self.state = OperationState.PROPERTY
@@ -84,7 +89,7 @@ class OperationStateMachine:
     def _handle_property(self, value: str):
         if not value.startswith("."):
             raise ValueError(f"TQL Failure: expected '.' found {value}")
-        
+
         property_value = value[1:]
         task_property = self.config.properties.get(property_value)
         if task_property is None:
@@ -95,7 +100,9 @@ class OperationStateMachine:
 
     def _handle_operation(self, value: str):
         if value not in Operations.__members__.values():
-            raise ValueError(f"TQL Failure: operation: '{value}' is not supported, supported operations: {[v.value for v in Operations.__members__.values()]}")
+            raise ValueError(
+                f"TQL Failure: operation: '{value}' is not supported, supported operations: {[v.value for v in Operations.__members__.values()]}"
+            )
 
         op = Operations(value)
         self.stack.append((self.state, op))
@@ -107,12 +114,13 @@ class OperationStateMachine:
 
     def _handle_logical(self, value: str):
         if value not in LogicalOperations.__members__.values():
-            raise ValueError(f"TQL Failure: logical operation: '{value}' is not supported, supported operations: {[v.value for v in LogicalOperations.__members__.values()]}")
+            raise ValueError(
+                f"TQL Failure: logical operation: '{value}' is not supported, supported operations: {[v.value for v in LogicalOperations.__members__.values()]}"
+            )
 
         op = LogicalOperations(value)
         self.stack.append((self.state, op))
         self.state = OperationState.PROPERTY
-
 
     def handle(self, value: str):
         if self.state == OperationState.PROPERTY:
@@ -125,14 +133,16 @@ class OperationStateMachine:
             self._handle_logical(value)
 
     def _create_operation(self, stack: list[object]) -> Operation:
-        if len(stack) == 3: #Binary
+        if len(stack) == 3:  # Binary
             a, op, b = stack
             return BinaryOperation(a, b, op)
         else:
-            raise ValueError(f"TQL Failure: unsupported operation ({len(stack)}) size operation is unsupported")
+            raise ValueError(
+                f"TQL Failure: unsupported operation ({len(stack)}) size operation is unsupported"
+            )
 
     def _logical_operation(self, task_stack: list[object], value: object, amount: int):
-        remaining = task_stack[len(task_stack) - amount:]
+        remaining = task_stack[len(task_stack) - amount :]
         operation = self._create_operation(remaining)
 
         for _ in range(amount):
@@ -201,4 +211,3 @@ def find(query: list[str], *, config: Fixture[TaskerConfig], tasks: Fixture[list
         result = state_machine.parse(task)
         if result:
             print(repr(task))
-

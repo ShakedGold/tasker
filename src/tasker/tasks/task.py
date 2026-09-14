@@ -1,14 +1,15 @@
 import os
 from pathlib import Path
+from typing import Self, TextIO
+
 from pydantic import BaseModel
-from typing import Final, TextIO, Self
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import DuplicateKeyError
 
-import tasker.cli.helpers as helpers
-from tasker.config.property import Property, ParsedProperty
+from tasker.cli import helpers
 from tasker.config.config import TaskerConfig
 from tasker.config.generation import GenerationMethod
+from tasker.config.property import ParsedProperty
 
 DEFAULT_TASK_TITLE = "Default Task Title"
 
@@ -24,6 +25,7 @@ FORMAT OF TASK FILE:
 """
 
 yaml = YAML()
+
 
 class Task(BaseModel):
     properties: dict[str, ParsedProperty]
@@ -51,14 +53,18 @@ class Task(BaseModel):
 
     @classmethod
     def create_default(cls, method: GenerationMethod, config: TaskerConfig) -> Self:
-        tasker_dir = helpers.find_tasks_dir() 
+        tasker_dir = helpers.find_tasks_dir()
         tasks = helpers.find_all_task_paths(tasker_dir)
 
         task_id = method.generate(config.generation.parameters, tasks)
 
         task_dir = tasker_dir / task_id
         task_file = task_dir / config.root_file_name
-        default_properties = {p_name: ParsedProperty(property_type=p, value=p.default) for p_name, p in config.properties.items() if p.default is not None}
+        default_properties = {
+            p_name: ParsedProperty(property_type=p, value=p.default)
+            for p_name, p in config.properties.items()
+            if p.default is not None
+        }
 
         if task_file.exists() or task_dir.exists():
             raise RuntimeError(f"task already exists! {task_file=}")
@@ -93,15 +99,25 @@ class Task(BaseModel):
         return properties
 
     @classmethod
-    def _parse_property(cls, property_name: str, property_content: object, task_file: TextIO, config: TaskerConfig) -> ParsedProperty:
+    def _parse_property(
+        cls,
+        property_name: str,
+        property_content: object,
+        task_file: TextIO,
+        config: TaskerConfig,
+    ) -> ParsedProperty:
         tasker_property = config.properties.get(property_name)
         if tasker_property is None:
-            raise ValueError(f"Invalid property detected! ({property_name}), available properties: {config.properties.keys()}")
+            raise ValueError(
+                f"Invalid property detected! ({property_name}), available properties: {config.properties.keys()}"
+            )
 
         try:
             tasker_property.check(property_content)
         except ValueError as err:
-            raise ValueError(f"Validation failed for '{property_name}' in task: '{os.path.relpath(task_file.name, Path.cwd())}' {err}") from err
+            raise ValueError(
+                f"Validation failed for '{property_name}' in task: '{os.path.relpath(task_file.name, Path.cwd())}' {err}"
+            ) from err
 
         return ParsedProperty(property_type=tasker_property, value=property_content)
 
@@ -120,7 +136,9 @@ class Task(BaseModel):
             return properties
 
         for property_name, property_content in properties_yaml.items():
-            properties[property_name] = cls._parse_property(property_name, property_content, task_file, config)
+            properties[property_name] = cls._parse_property(
+                property_name, property_content, task_file, config
+            )
 
         return properties
 
@@ -129,7 +147,9 @@ class Task(BaseModel):
         empty_line = task_file.readline()
 
         if empty_line != "\n":
-            raise ValueError(f"Expected empty seperating line between properties and title, found: {empty_line}")
+            raise ValueError(
+                f"Expected empty seperating line between properties and title, found: {empty_line}"
+            )
 
         title_line = task_file.readline().strip()
 
@@ -146,7 +166,9 @@ class Task(BaseModel):
             return ""
 
         if empty_line != "\n":
-            raise ValueError(f"Expected empty seperating line between title and body, found: {empty_line}")
+            raise ValueError(
+                f"Expected empty seperating line between title and body, found: {empty_line}"
+            )
 
         return task_file.read()
 
@@ -159,5 +181,10 @@ class Task(BaseModel):
             title = cls._parse_title(task_file)
             body = cls._parse_body(task_file)
 
-        return cls(properties=properties, title=title, body=body, task_id=task_id, path=Path(path))
-
+        return cls(
+            properties=properties,
+            title=title,
+            body=body,
+            task_id=task_id,
+            path=Path(path),
+        )

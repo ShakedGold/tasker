@@ -1,12 +1,13 @@
 import os
-from pathlib import Path
 import shutil
-import logging
+from pathlib import Path
+
 from cyclopts import App
 
-import tasker.cli.helpers as helpers
+from tasker.cli import helpers
 
 rm_app = App()
+
 
 @rm_app.default
 def rm(ids: list[str]):

@@ -1,8 +1,9 @@
 import logging
 from pathlib import Path
+
 from cyclopts import App
 
-import tasker.cli.helpers as helpers
+from tasker.cli import helpers
 
 DEFAULT_CONFIG = """\
 root_file_name = "README.md"
@@ -31,6 +32,7 @@ type = "array"
 """
 
 init_app = App()
+
 
 @init_app.default
 def init():

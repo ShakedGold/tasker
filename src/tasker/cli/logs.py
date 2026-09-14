@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import ClassVar
 
 from rich.logging import RichHandler
 
-class DynamicLevelFormatter(logging.Formatter):
 
+class DynamicLevelFormatter(logging.Formatter):
     def __init__(self, formats: dict[int, logging.Formatter]):
         super().__init__()
         self.formats = formats
-        self.default_formatter = logging.Formatter('%(asctime)s [%(levelname)s] (%(filename)s:%(lineno)d) - %(message)s')
+        self.default_formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] (%(filename)s:%(lineno)d) - %(message)s"
+        )
 
     def format(self, record: logging.LogRecord) -> str:
         logger_name = record.name
@@ -19,10 +22,11 @@ class DynamicLevelFormatter(logging.Formatter):
         formatter = self.formats.get(logger.level, self.default_formatter)
         return formatter.format(record)
 
+
 class ColoredMessageFormatter(DynamicLevelFormatter):
     """Color the entire log message based on its log level."""
 
-    COLORS = {
+    COLORS: ClassVar[dict[int, str]] = {
         logging.DEBUG: "dim",
         logging.INFO: "green",
         logging.WARNING: "yellow",
@@ -73,9 +77,7 @@ def setup_logging(
         rich_tracebacks=True,
     )
     console_handler.setFormatter(
-        ColoredMessageFormatter({
-            logging.FATAL: logging.Formatter("%(message)s")
-        })
+        ColoredMessageFormatter({logging.FATAL: logging.Formatter("%(message)s")})
     )
 
     root_logger.addHandler(console_handler)
@@ -91,10 +93,7 @@ def setup_logging(
         )
         file_handler.setLevel(level)
         file_handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-            )
+            logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
         )
 
         root_logger.addHandler(file_handler)
-

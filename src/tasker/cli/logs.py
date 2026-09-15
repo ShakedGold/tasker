@@ -77,7 +77,7 @@ def setup_logging(
         rich_tracebacks=True,
     )
     console_handler.setFormatter(
-        ColoredMessageFormatter({logging.FATAL: logging.Formatter("%(message)s")})
+        ColoredMessageFormatter({logging.INFO: logging.Formatter("%(message)s")})
     )
 
     root_logger.addHandler(console_handler)

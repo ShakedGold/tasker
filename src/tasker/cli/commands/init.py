@@ -1,3 +1,5 @@
+import json
+from tasker.config.config import TaskerConfig
 import logging
 from pathlib import Path
 
@@ -6,6 +8,8 @@ from cyclopts import App
 from tasker.cli import helpers
 
 DEFAULT_CONFIG = """\
+#:schema ./.config.schema.json
+
 root_file_name = "README.md"
 
 [generation]
@@ -47,5 +51,13 @@ def init():
 
     tasker_dir.mkdir()
 
-    (tasker_dir / ".config.toml").write_text(DEFAULT_CONFIG)
+    schema_path = tasker_dir / ".config.schema.json"
+    schema_path.write_text(json.dumps(TaskerConfig.model_json_schema()))
+
+    logging.debug(f"created {schema_path}")
+
+    tasker_config = tasker_dir / ".config.toml"
+    tasker_config.write_text(DEFAULT_CONFIG)
+
+    logging.debug(f"created {tasker_config}")
     logging.info(f"Created a tasker project in {Path.cwd()}")

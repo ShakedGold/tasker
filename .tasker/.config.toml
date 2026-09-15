@@ -1,3 +1,5 @@
+#:schema ./.config.schema.json
+
 root_file_name = "README.md"
 
 [properties.status]

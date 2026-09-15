@@ -27,16 +27,17 @@ app.command(cat_app, name="cat")
 def pre_command(
     *tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)],
     verbose: Annotated[
-        int,
+        bool,
         Parameter(
             name=["-v", "--verbose"],
-            count=True,
-            help="Increase verbosity (-v for INFO, -vv for DEBUG).",
+            help="Increase verbosity (-v for DEBUG).",
         ),
-    ] = 0,
+    ] = False,
 ):
-    log_level = logging.FATAL - (verbose * 10)
-    setup_logging(log_level)
+    if verbose:
+        setup_logging(logging.DEBUG)
+    else:
+        setup_logging(logging.INFO)
 
     command, bound, _ = app.parse_args(tokens)
 
@@ -56,5 +57,5 @@ def main():
         else:
             logging.fatal(error_message)
 
-        if logging.getLogger().level != logging.FATAL:
+        if logging.getLogger().level != logging.INFO:
             raise

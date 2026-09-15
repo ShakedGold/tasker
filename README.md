@@ -31,7 +31,7 @@ however they were either lacking in features or too strict in their format.
 My goal was to create a generic issue manager (so even the `'status'` is not required, it is just a convention), I wanted it to be simple yet powerfull.
 I could not find anything online, so I just had to create my own.
 
-NOTE: tasker is not dependant on any source control/remote file managers like ftp, so you can safely use it with whatever you want, everything is self-contained within the `.tasker/` directory
+> [!NOTE] tasker is not dependant on any source control/remote file managers like ftp, so you can safely use it with whatever you want, everything is self-contained within the `.tasker/` directory
 
 ### Syncing and SSOT (Single Source of Truth)
 A big part of why I did not use any other existing task/issue managers that are in repo, is that they provided no way to have a single point where all issues are in.

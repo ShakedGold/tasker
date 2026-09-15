@@ -1,3 +1,4 @@
+from tasker.config.config import TaskerConfig
 from cyclopts import App
 from rich.console import Console
 from rich.markdown import Markdown
@@ -10,7 +11,13 @@ cat_app = App()
 
 
 @cat_app.default
-def cat(ids: list[str], syntax: bool = True, *, tasks: Fixture[list[Task]]):
+def cat(
+    ids: list[str],
+    syntax: bool = True,
+    *,
+    config: Fixture[TaskerConfig],
+    tasks: Fixture[list[Task]],
+):
     """Concat tasks and print them out
 
     Parameters
@@ -23,7 +30,8 @@ def cat(ids: list[str], syntax: bool = True, *, tasks: Fixture[list[Task]]):
     tasks_dir = helpers.find_tasks_dir()
 
     for task_id in ids:
-        task = helpers.find_single_task_by_partial_id(task_id, tasks_dir)
+        task_path = helpers.find_single_task_by_partial_id(task_id, tasks_dir)
+        task = Task.parse_file(task_path / config.root_file_name, task_path.name, config)
 
         if syntax:
             console = Console()

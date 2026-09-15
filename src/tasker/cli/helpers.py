@@ -31,13 +31,19 @@ def find_tasks_by_partial_id(partial_task_id: str, tasks_dir: Path) -> list[Path
 
 def find_single_task_by_partial_id(partial_task_id: str, tasks_dir: Path) -> Path:
     tasks = find_tasks_by_partial_id(partial_task_id, tasks_dir)
+    task_names = [task.name for task in tasks]
+    found_task = None
 
     if len(tasks) == 0:
         raise RuntimeError(f"task({partial_task_id}) not found")
 
-    if len(tasks) > 1:
-        raise RuntimeError(
-            f"task({partial_task_id}) is ambigous, matched tasks: {[task.name for task in tasks]}"
-        )
+    full_task_matches = list(filter(lambda task: task.name == partial_task_id, tasks))
 
-    return tasks[0]
+    if len(full_task_matches) == 1:
+        found_task = full_task_matches[0]
+    elif len(tasks) > 1:
+        raise RuntimeError(f"task({partial_task_id}) is ambigous, matched tasks: {task_names}")
+    else:
+        found_task = tasks[0]
+
+    return found_task

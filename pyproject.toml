@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Shaked Gold", email = "shakedgold2005@gmail.com" }
 ]
-requires-python = "==3.14"
+requires-python = "==3.14.7"
 dependencies = [
     "cyclopts==4.25.2",
     "ruamel-yaml==0.19.1",

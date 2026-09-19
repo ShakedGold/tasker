@@ -60,3 +60,38 @@ I recommend the following flow for git:
 - `git push` - optionally push to a remote if exists in order to keep you tasks pushed (although you can do this later as well)
 
 This is just my workflow I recommend using, you can just as easily create a different one that keeps an SSOT :)
+This is a script I created to allow tasker to work in a git repo.
+
+If you put this in your $PATH and then execute `git tasker ...` it will execute this script.
+```bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+git switch -C tasker > /dev/null 2>&1
+
+if [[ "$1" == "sync" ]]; then
+  echo "Syncing tasker branch..."
+  git pull --rebase &>/dev/null
+
+  exit
+fi
+
+tasker $@
+
+if [ -n "$(git status --short)" ]; then
+  git add -A
+  echo "Committing tasker changes" && git commit -m "tasker" > /dev/null
+
+  if git ls-remote --exit-code --heads origin tasker > /dev/null 2>&1; then
+    echo "Pushing tasker changes..." && git push &> /dev/null || \
+    echo "Remote changes detected, rebasing..." && git pull --rebase &>/dev/null && \
+    echo "Pushing tasker changes..." && git push &> /dev/null
+  fi
+fi
+
+git switch - > /dev/null 2>&1
+```
+
+After each tasker command, it checks to see if there are any changes, if there are it tries to sync them with a remote if it exists.
+You can use `git tasker sync` to sync it manually from the remote

@@ -68,29 +68,40 @@ If you put this in your $PATH and then execute `git tasker ...` it will execute 
 
 set -euo pipefail
 
-git switch -C tasker > /dev/null 2>&1
+if [[ ! -d .git ]]; then
+  tasker $@
+  exit
+fi
+
+changes=$(git status --short)
+if [ -n "$changes" ]; then
+  echo "You have changes in the current branch! unable to move to the tasker branch"
+  git status
+  exit
+fi
+
+git switch tasker &> /dev/null || true
 
 if [[ "$1" == "sync" ]]; then
   echo "Syncing tasker branch..."
   git pull --rebase &>/dev/null
+else
+  tasker $@
 
-  exit
-fi
+  if [ -n "$(git status --short -- .tasker)" ]; then
+    git add .tasker
+    echo "Committing tasker changes" && git commit -m "tasker" > /dev/null
 
-tasker $@
-
-if [ -n "$(git status --short)" ]; then
-  git add -A
-  echo "Committing tasker changes" && git commit -m "tasker" > /dev/null
-
-  if git ls-remote --exit-code --heads origin tasker > /dev/null 2>&1; then
-    echo "Pushing tasker changes..." && git push &> /dev/null || \
-    echo "Remote changes detected, rebasing..." && git pull --rebase &>/dev/null && \
-    echo "Pushing tasker changes..." && git push &> /dev/null
+    if git ls-remote --exit-code --heads origin tasker > /dev/null 2>&1; then
+      echo "Pushing tasker changes..." && git push &> /dev/null || \
+      echo "Remote changes detected, rebasing..." && git pull --rebase &>/dev/null && \
+      echo "Pushing tasker changes..." && git push &> /dev/null
+    fi
   fi
+
 fi
 
-git switch - > /dev/null 2>&1
+git switch - &> /dev/null || true
 ```
 
 After each tasker command, it checks to see if there are any changes, if there are it tries to sync them with a remote if it exists.
